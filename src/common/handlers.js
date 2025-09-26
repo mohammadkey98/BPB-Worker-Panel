@@ -6,6 +6,7 @@ import { getXrayCustomConfigs, getXrayWarpConfigs } from "#configs/xray";
 import { getDataset, updateDataset } from "#kv";
 import JSZip from "jszip";
 import { fetchWarpConfigs } from "#protocols/warp";
+import { base64UrlDecode } from "#configs/utils";
 import { globalConfig, httpConfig, wsConfig } from "#common/init";
 import { VlOverWSHandler } from "#protocols/websocket/vless";
 import { TrOverWSHandler } from "#protocols/websocket/trojan";
@@ -15,7 +16,7 @@ export async function handleWebsocket(request) {
     const encodedPathConfig = globalConfig.pathName.replace("/", "") || '';
 
     try {
-        const { protocol, mode, panelIPs } = JSON.parse(atob(encodedPathConfig));
+        const { protocol, mode, panelIPs } = JSON.parse(base64UrlDecode(encodedPathConfig));
 
         Object.assign(wsConfig, {
             wsProtocol: protocol,
@@ -100,6 +101,7 @@ export async function handleSubscriptions(request, env) {
                 default:
                     break;
             }
+            break;
 
         case `/sub/fragment/${subPath}`:
             switch (client) {
@@ -110,6 +112,7 @@ export async function handleSubscriptions(request, env) {
                 default:
                     break;
             }
+            break;
 
         case `/sub/warp/${subPath}`:
             switch (client) {
@@ -122,6 +125,7 @@ export async function handleSubscriptions(request, env) {
                 default:
                     break;
             }
+            break;
 
         case `/sub/warp-pro/${subPath}`:
             switch (client) {
@@ -133,6 +137,7 @@ export async function handleSubscriptions(request, env) {
                 default:
                     break;
             }
+            break;
 
         default:
             return await fallback(request);
@@ -206,7 +211,7 @@ async function getMyIP(request) {
     const ip = await request.text();
 
     try {
-        const response = await fetch(`http://ip-api.com/json/${ip}?nocache=${Date.now()}`);
+        const response = await fetch(`https://ip-api.com/json/${ip}?nocache=${Date.now()}`);
         const geoLocation = await response.json();
 
         return await respond(true, 200, null, geoLocation);

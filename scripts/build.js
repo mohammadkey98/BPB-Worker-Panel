@@ -11,6 +11,7 @@ import pkg from '../package.json' with { type: 'json' };
 
 const env = process.env.NODE_ENV || 'mangle';
 const mangleMode = env === 'mangle';
+const disableJunk = process.env.DISABLE_JUNK === '1' || process.env.DISABLE_JUNK === 'true';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = pathDirname(__filename);
@@ -63,8 +64,9 @@ async function processHtmlPages() {
 }
 
 function generateJunkCode() {
-    const minVars = 50, maxVars = 500;
-    const minFuncs = 50, maxFuncs = 500;
+    if (disableJunk) return '';
+    const minVars = 10, maxVars = 50;
+    const minFuncs = 10, maxFuncs = 50;
 
     const varCount = Math.floor(Math.random() * (maxVars - minVars + 1)) + minVars;
     const funcCount = Math.floor(Math.random() * (maxFuncs - minFuncs + 1)) + minFuncs;
