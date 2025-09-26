@@ -3,7 +3,7 @@ import { settings } from '#common/handlers'
 
 export function isDomain(address) {
     if (!address) return false;
-    const domainPattern = /^(?!-)(?:[A-Za-z0-9-]{1,63}.)+[A-Za-z]{2,}$/;
+    const domainPattern = /^(?!-)(?:[A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,}$/;
     return domainPattern.test(address);
 }
 
@@ -15,8 +15,10 @@ export async function resolveDNS(domain, onlyIPv4 = false) {
     };
 
     try {
-        const ipv4 = await fetchDNSRecords(dohURLs.ipv4, 1);
-        const ipv6 = onlyIPv4 ? [] : await fetchDNSRecords(dohURLs.ipv6, 28);
+        const [ipv4, ipv6] = await Promise.all([
+            fetchDNSRecords(dohURLs.ipv4, 1),
+            onlyIPv4 ? Promise.resolve([]) : fetchDNSRecords(dohURLs.ipv6, 28)
+        ]);
         return { ipv4, ipv6 };
     } catch (error) {
         throw new Error(`Error resolving DNS for ${domain}: ${error.message}`);
@@ -105,7 +107,7 @@ export function generateWsPath(protocol) {
         panelIPs: settings.proxyIPMode === 'proxyip' ? settings.proxyIPs : settings.prefixes
     };
 
-    return `/${btoa(JSON.stringify(config))}`;
+    return `/${base64UrlEncode(JSON.stringify(config))}`;
 }
 
 export function base64ToDecimal(base64) {
@@ -114,6 +116,17 @@ export function base64ToDecimal(base64) {
     const decimalArray = hexString.match(/.{2}/g).map(hex => parseInt(hex, 16));
 
     return decimalArray;
+}
+
+export function base64UrlEncode(str) {
+    return btoa(str).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
+}
+
+export function base64UrlDecode(str) {
+    const base64 = str.replaceAll('-', '+').replaceAll('_', '/');
+    const padLen = (4 - (base64.length % 4)) % 4;
+    const padded = base64 + '='.repeat(padLen);
+    return atob(padded);
 }
 
 export function isIPv4(address) {

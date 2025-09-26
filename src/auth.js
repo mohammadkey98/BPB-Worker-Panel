@@ -64,7 +64,7 @@ export async function Authenticate(request, env) {
 
 export async function logout() {
     return await respond(true, 200, 'Successfully logged out!', null, {
-        'Set-Cookie': 'jwtToken=; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
+        'Set-Cookie': 'jwtToken=; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
         'Content-Type': 'text/plain'
     });
 }
@@ -85,7 +85,7 @@ export async function resetPassword(request, env) {
     await env.kv.put('pwd', newPwd);
     
     return await respond(true, 200, 'Successfully logged in!', null, {
-        'Set-Cookie': 'jwtToken=; Path=/; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
+        'Set-Cookie': 'jwtToken=; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
         'Content-Type': 'text/plain',
     });
 }
